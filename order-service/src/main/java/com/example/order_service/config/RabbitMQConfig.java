@@ -5,7 +5,9 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
@@ -17,6 +19,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
+@EnableRabbit
 public class RabbitMQConfig {
 
     public static final String ORDER_EXCHANGE = "order-exchange";
@@ -25,6 +28,8 @@ public class RabbitMQConfig {
     public static final String DLQ_EXCHANGE = "dlq-exchange";
     public static final String DLQ_QUEUE = "dlq-queue";
     public static final String ORDER_CANCELLED_ROUTING_KEY = "order.cancelled";
+    public static final String INVENTORY_REPLY_QUEUE = "inventory.reply";
+    public static final String INVENTORY_REPLY_ROUTING_KEY = "inventory.updated";
 
     @Bean
     public TopicExchange orderExchange() {
@@ -57,6 +62,18 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue inventoryReplyQueue() {
+        return QueueBuilder.durable(INVENTORY_REPLY_QUEUE).build();
+    }
+
+    @Bean
+    public Binding inventoryReplyBinding(Queue inventoryReplyQueue, TopicExchange orderExchange) {
+        return BindingBuilder.bind(inventoryReplyQueue)
+                .to(orderExchange)
+                .with(INVENTORY_REPLY_ROUTING_KEY);
+    }
+
+    @Bean
     public Binding dlqBinding(Queue dlqQueue, TopicExchange dlqExchange) {
         return BindingBuilder.bind(dlqQueue)
                 .to(dlqExchange)
@@ -74,6 +91,11 @@ public class RabbitMQConfig {
     @Bean
     public MessageConverter messageConverter(ObjectMapper objectMapper) {
         return new Jackson2JsonMessageConverter(objectMapper);
+    }
+
+    @Bean
+    public RabbitAdmin amqpAdmin(ConnectionFactory connectionFactory) {
+        return new RabbitAdmin(connectionFactory);
     }
 
     @Bean

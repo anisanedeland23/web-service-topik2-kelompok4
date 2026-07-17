@@ -1,0 +1,17 @@
+Pastikan RabbitMQ sudah hidup
+Jika Anda pakai Docker, jalankan:
+
+docker run -d --name rabbitmq-local -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+Setelah itu buka:
+
+http://localhost:15672
+username: guest
+password: guest
+Jalankan service order
+Buka terminal di folder order-service lalu jalankan:
+cd d:\dataku\Semester_8\Tts web\web-service-topik2-kelompok4\order-service
+mvnw.cmd spring-boot:run
+Jalankan service inventory
+Buka terminal lain di folder inventory-service lalu jalankan:
+cd d:\dataku\Semester_8\Tts web\web-service-topik2-kelompok4\inventory-service
+mvnw.cmd spring-boot:run
