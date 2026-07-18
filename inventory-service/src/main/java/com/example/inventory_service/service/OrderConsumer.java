@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.example.inventory_service.config.RabbitMQConfig;
 import com.example.inventory_service.event.InventoryUpdatedEvent;
 import com.example.inventory_service.event.OrderCreatedEvent;
+import com.example.inventory_service.exception.ProductNotFoundException;
 import com.example.inventory_service.model.Inventory;
 import com.example.inventory_service.model.ProcessedOrder;
 import com.example.inventory_service.repository.InventoryRepository;
@@ -34,6 +35,13 @@ public class OrderConsumer {
         if (processedOrderRepository.findByOrderId(event.getOrderId()).isPresent()) {
             log.warn("[CONSUMER] Order {} already processed, ignoring duplicate", event.getOrderId());
             return;
+        }
+
+        for (OrderCreatedEvent.OrderItem item : event.getItems()) {
+            if (inventoryRepository.findByProductId(item.getProductId()).isEmpty()) {
+                log.error("[CONSUMER] Produk tidak dikenal: {} -> memicu retry/DLQ", item.getProductId());
+                throw new ProductNotFoundException("Produk tidak ditemukan di katalog: " + item.getProductId());
+            }
         }
 
         boolean allSuccess = true;
