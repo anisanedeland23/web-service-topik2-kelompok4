@@ -17,11 +17,11 @@ Terdiri dari 2 service:
 
 | Anggota | Nama | Tugas |
 |---|---|---|
-| Anggota 1 | _(isi nama)_ | CRUD Order (PostgreSQL) — 5 endpoint |
-| Anggota 2 | _(isi nama)_ | Koneksi RabbitMQ — exchange, queue, binding |
-| Anggota 3 | _(isi nama)_ | Producer — kirim pesan ke queue |
-| Anggota 4 | _(isi nama)_ | Consumer (Choreography) — listener otomatis + logging |
-| Anggota 5 | _(isi nama)_ | **Retry 3x, Dead Letter Queue (DLQ), README & screenshot** |
+| Anggota 1 | ANISA VIRGINIA SHALOMITA NEDELAND | CRUD Order (PostgreSQL) — 5 endpoint |
+| Anggota 2 | RAYHAN PUTRA ATHADZAKI | Koneksi RabbitMQ — exchange, queue, binding |
+| Anggota 3 | AUFA ROISUL CHAKIM | Producer — kirim pesan ke queue |
+| Anggota 4 | YOAN URIP HARDONO | Consumer (Choreography) — listener otomatis + logging |
+| Anggota 5 | MADE BAGAS DWI ARTANANTA | **Retry 3x, Dead Letter Queue (DLQ), README & screenshot** |
 
 ---
 
@@ -241,7 +241,7 @@ Pesan gagal tersimpan aman di DLQ untuk diperiksa manual (tidak hilang, tidak lo
 
 ---
 
-## ⚙️ Bagaimana Retry & DLQ Bekerja (Detail — Anggota 5)
+## ⚙️ Bagaimana Retry & DLQ Bekerja
 
 ### Konfigurasi Retry
 `inventory-service/src/main/resources/application.properties`:
