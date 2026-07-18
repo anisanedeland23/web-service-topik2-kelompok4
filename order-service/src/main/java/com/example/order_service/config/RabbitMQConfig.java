@@ -46,6 +46,14 @@ public class RabbitMQConfig {
                 .with(ORDER_ROUTING_KEY);
     }
 
+    // PERBAIKAN: Menambahkan pembuatan antrean (queue) "inventory.reply" secara mandiri di order-service.
+    // Tujuannya agar aplikasi order tidak crash saat inventory-service sedang mati,
+    // karena OrderConsumerReply sangat membutuhkan antrean ini untuk menerima balasan (success=true/false).
+    @Bean
+    public Queue inventoryReplyQueue() {
+        return QueueBuilder.durable("inventory.reply").build();
+    }
+
     @Bean
     public TopicExchange dlqExchange() {
         return new TopicExchange(DLQ_EXCHANGE);
