@@ -101,11 +101,13 @@ docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:4-management
 > Jika muncul error `failed to connect to the docker API`, berarti **Docker Desktop belum
 > berjalan**. Buka aplikasi Docker Desktop dulu, tunggu sampai statusnya "running", lalu ulangi.
 
-### 2) MongoDB (Atlas — cloud)
+### 2) Jalankan MongoDB (Docker Compose)
 
-`inventory-service` sudah dikonfigurasi terhubung ke **MongoDB Atlas** (database cloud) melalui
-`spring.mongodb.uri` di `inventory-service/src/main/resources/application.properties`.
-Jadi **tidak perlu menjalankan MongoDB lokal** — cukup pastikan ada koneksi internet.
+`inventory-service` terhubung ke **MongoDB lokal** (`mongodb://localhost:27017/inventorydb`).
+Jalankan MongoDB memakai `docker-compose.yml` yang sudah tersedia di folder root:
+
+```powershell
+docker compose up -d
 
 Saat `inventory-service` pertama kali start, data stok awal akan otomatis di-*seed*
 (jika koleksi masih kosong):
