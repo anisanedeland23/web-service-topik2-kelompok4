@@ -1,5 +1,7 @@
 package com.example.order_service.service;
 
+import java.util.UUID;
+
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,16 +19,21 @@ public class OrderProducer {
     private final RabbitTemplate rabbitTemplate;
 
     public void sendOrderCreatedEvent(OrderCreatedEvent event) {
-        log.info("[PRODUCER] Sending OrderCreatedEvent for order {}", event.getOrderId());
+        log.info("[PRODUCER] Memulai pengiriman data pesanan (ID: {}) ke RabbitMQ...", event.getOrderId());
 
         rabbitTemplate.convertAndSend(
                 RabbitMQConfig.ORDER_EXCHANGE,
                 RabbitMQConfig.ORDER_ROUTING_KEY,
                 event,
                 message -> {
+                
+                    message.getMessageProperties().setMessageId(UUID.randomUUID().toString());
+                
+                    message.getMessageProperties().setHeader("X-Sender", "Producer");
                     message.getMessageProperties().setReplyTo("inventory.reply");
                     return message;
                 });
-        log.info("[PRODUCER] Event sent with replyTo='inventory.reply'");
+
+        log.info("[PRODUCER] Pesan sukses diteruskan ke antrean dengan replyTo='inventory.reply'");
     }
 }
