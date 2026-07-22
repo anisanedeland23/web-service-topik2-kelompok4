@@ -17,7 +17,7 @@ Terdiri dari 2 service:
 
 | Anggota | Nama | Tugas |
 |---|---|---|
-| Anggota 1 | ANISA VIRGINIA SHALOMITA NEDELAND | CRUD Order (PostgreSQL) — 5 endpoint |
+| Anggota 1 | ANISA VIRGINIA SHALOMITA NEDELAND | CRUD Order (PostgreSQL)  |
 | Anggota 2 | RAYHAN PUTRA ATHADZAKI | Koneksi RabbitMQ — exchange, queue, binding |
 | Anggota 3 | AUFA ROISUL CHAKIM | Producer — kirim pesan ke queue |
 | Anggota 4 | YOAN URIP HARDONO | Consumer (Choreography) — listener otomatis + logging |
