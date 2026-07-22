@@ -26,12 +26,8 @@ public class OrderProducer {
                 RabbitMQConfig.ORDER_ROUTING_KEY,
                 event,
                 message -> {
-                    // Kustomisasi Anggota 3 (Producer): 
-                    // 1. Memberi nomor resi (ID) unik pada pesan untuk mencegah duplikasi (best practice: idempotency)
                     message.getMessageProperties().setMessageId(UUID.randomUUID().toString());
-                    // 2. Menempelkan 'stempel pengirim' tambahan (Header) tanpa mengganggu isi pesan utama
                     message.getMessageProperties().setHeader("X-Sender", "Producer");
-                    // 3. Memberitahu Consumer agar mengirim surat balasan (hasil stok) ke antrean 'inventory.reply'
                     message.getMessageProperties().setReplyTo("inventory.reply");
                     return message;
                 });

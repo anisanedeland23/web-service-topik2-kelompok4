@@ -5,7 +5,9 @@ import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
@@ -17,6 +19,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Configuration
+@EnableRabbit
 public class RabbitMQConfig {
 
     public static final String ORDER_EXCHANGE = "order-exchange";
@@ -25,6 +28,8 @@ public class RabbitMQConfig {
     public static final String DLQ_EXCHANGE = "dlq-exchange";
     public static final String DLQ_QUEUE = "dlq-queue";
     public static final String ORDER_CANCELLED_ROUTING_KEY = "order.cancelled";
+    public static final String INVENTORY_REPLY_QUEUE = "inventory.reply";
+    public static final String INVENTORY_REPLY_ROUTING_KEY = "inventory.updated";
 
     @Bean
     public TopicExchange orderExchange() {
@@ -46,14 +51,6 @@ public class RabbitMQConfig {
                 .with(ORDER_ROUTING_KEY);
     }
 
-    // PERBAIKAN: Menambahkan pembuatan antrean (queue) "inventory.reply" secara mandiri di order-service.
-    // Tujuannya agar aplikasi order tidak crash saat inventory-service sedang mati,
-    // karena OrderConsumerReply sangat membutuhkan antrean ini untuk menerima balasan (success=true/false).
-    @Bean
-    public Queue inventoryReplyQueue() {
-        return QueueBuilder.durable("inventory.reply").build();
-    }
-
     @Bean
     public TopicExchange dlqExchange() {
         return new TopicExchange(DLQ_EXCHANGE);
@@ -62,6 +59,18 @@ public class RabbitMQConfig {
     @Bean
     public Queue dlqQueue() {
         return QueueBuilder.durable(DLQ_QUEUE).build();
+    }
+
+    @Bean
+    public Queue inventoryReplyQueue() {
+        return QueueBuilder.durable(INVENTORY_REPLY_QUEUE).build();
+    }
+
+    @Bean
+    public Binding inventoryReplyBinding(Queue inventoryReplyQueue, TopicExchange orderExchange) {
+        return BindingBuilder.bind(inventoryReplyQueue)
+                .to(orderExchange)
+                .with(INVENTORY_REPLY_ROUTING_KEY);
     }
 
     @Bean
@@ -81,7 +90,22 @@ public class RabbitMQConfig {
 
     @Bean
     public MessageConverter messageConverter(ObjectMapper objectMapper) {
-        return new Jackson2JsonMessageConverter(objectMapper);
+        Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(objectMapper);
+        org.springframework.amqp.support.converter.DefaultClassMapper classMapper = new org.springframework.amqp.support.converter.DefaultClassMapper();
+        classMapper.setTrustedPackages("*");
+        
+        // Memetakan __TypeId__ dari inventory-service ke class di order-service
+        java.util.Map<String, Class<?>> idClassMapping = new java.util.HashMap<>();
+        idClassMapping.put("com.example.inventory_service.event.InventoryUpdatedEvent", com.example.order_service.event.InventoryUpdatedEvent.class);
+        classMapper.setIdClassMapping(idClassMapping);
+        
+        converter.setClassMapper(classMapper);
+        return converter;
+    }
+
+    @Bean
+    public RabbitAdmin amqpAdmin(ConnectionFactory connectionFactory) {
+        return new RabbitAdmin(connectionFactory);
     }
 
     @Bean
