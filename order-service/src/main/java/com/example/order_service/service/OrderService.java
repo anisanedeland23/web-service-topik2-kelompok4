@@ -30,23 +30,27 @@ public class OrderService {
 
     @Transactional
     public OrderResponse createOrder(OrderRequest request) {
-        log.info("[CREATE] Order for customer: {}", request.getCustomerName());
+        log.info("[CREATE ORDER] Menerima pesanan baru dari pelanggan: {}", request.getCustomerName());
         double total = request.getItems().stream()
                 .mapToDouble(i -> i.getPrice() * i.getQuantity())
                 .sum();
 
         Order order = orderMapper.toEntity(request);
         order.setTotalAmount(total);
+        order.setStatus(Order.OrderStatus.PENDING);
         try {
             order.setItems(objectMapper.writeValueAsString(request.getItems()));
+            log.info("[CREATE ORDER] Item pesanan sukses diproses menjadi format JSON");
         } catch (JsonProcessingException e) {
+            log.error("[CREATE ORDER] Gagal memproses item pesanan: {}", e.getMessage());
             throw new RuntimeException("Failed to serialize items", e);
         }
 
         order = orderRepository.save(order);
-        log.info("[CREATE] Order saved, id={}", order.getId());
+        log.info("[CREATE ORDER] Pesanan (ID: {}) berhasil disimpan ke database PostgreSQL dengan status PENDING", order.getId());
 
         OrderCreatedEvent event = orderMapper.toEvent(order, request);
+        log.info("[CREATE ORDER] Memanggil OrderProducer untuk mengirim pesanan (ID: {}) ke RabbitMQ", order.getId());
         orderProducer.sendOrderCreatedEvent(event);
 
         List<OrderItemResponse> items = request.getItems().stream()

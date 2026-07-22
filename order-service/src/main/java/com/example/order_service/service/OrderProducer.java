@@ -26,9 +26,7 @@ public class OrderProducer {
                 RabbitMQConfig.ORDER_ROUTING_KEY,
                 event,
                 message -> {
-                
                     message.getMessageProperties().setMessageId(UUID.randomUUID().toString());
-                
                     message.getMessageProperties().setHeader("X-Sender", "Producer");
                     message.getMessageProperties().setReplyTo("inventory.reply");
                     return message;
