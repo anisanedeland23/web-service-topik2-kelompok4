@@ -90,7 +90,17 @@ public class RabbitMQConfig {
 
     @Bean
     public MessageConverter messageConverter(ObjectMapper objectMapper) {
-        return new Jackson2JsonMessageConverter(objectMapper);
+        Jackson2JsonMessageConverter converter = new Jackson2JsonMessageConverter(objectMapper);
+        org.springframework.amqp.support.converter.DefaultClassMapper classMapper = new org.springframework.amqp.support.converter.DefaultClassMapper();
+        classMapper.setTrustedPackages("*");
+        
+        // Memetakan __TypeId__ dari inventory-service ke class di order-service
+        java.util.Map<String, Class<?>> idClassMapping = new java.util.HashMap<>();
+        idClassMapping.put("com.example.inventory_service.event.InventoryUpdatedEvent", com.example.order_service.event.InventoryUpdatedEvent.class);
+        classMapper.setIdClassMapping(idClassMapping);
+        
+        converter.setClassMapper(classMapper);
+        return converter;
     }
 
     @Bean
